@@ -20,3 +20,11 @@ type Light interface {
 	// Set saturation manually
 	SetSaturation(sat int)
 }
+
+type light struct {
+	on bool
+	reachable bool
+	saturation int	
+	brightness int
+	color color.Color
+}
