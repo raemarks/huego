@@ -6,25 +6,19 @@ import (
 
 type Light interface {
 	// Reset color to white with max brightness
-	Reset()
+	Reset() error
 	// Turn light on
-	On()
+	On() error
 	// Turn light off
-	Off()
+	Off() error
 	// Set color with max brightness
-	SetColor(color color.Color)
+	SetColor(color color.Color) error
 	// Set brightness manually
-	SetBrightness(brightness int)
+	SetBrightness(brightness int) error
 	// Set hue manually
-	SetHue(hue int)
+	SetHue(hue int) error
 	// Set saturation manually
-	SetSaturation(sat int)
-}
-
-type light struct {
-	on bool
-	reachable bool
-	saturation int	
-	brightness int
-	color color.Color
+	SetSaturation(sat int) error
+	// Set light's name
+	SetName(name string) error
 }

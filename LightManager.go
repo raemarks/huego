@@ -1,5 +1,5 @@
 package main
 
 type LightManager struct {
-	bridge Bridge
+	bridge HueBridge
 }
