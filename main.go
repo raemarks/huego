@@ -1,9 +1,9 @@
 package main
 
 import (
-		"fmt"
-		"time"
-       )
+	"fmt"
+	"time"
+)
 
 func main() {
 	fmt.Println("Hello world, this is huego!")
@@ -14,13 +14,12 @@ func main() {
 		fmt.Println(err)
 	}
 
-	lights,err := bridge.GetLights()
+	lights, err := bridge.GetLights()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(lights)
 
-	for _,l := range lights {
+	for _, l := range lights {
 		err := l.Off()
 		if err != nil {
 			panic(err)
@@ -28,10 +27,32 @@ func main() {
 	}
 	time.Sleep(time.Second * 2)
 
-	for _,l := range lights {
+	for _, l := range lights {
 		err := l.On()
 		if err != nil {
 			panic(err)
 		}
 	}
+	time.Sleep(time.Second * 2)
+	for _, l := range lights {
+		err := l.SetHue(1000)
+		if err != nil {
+			panic(err)
+		}
+	}
+	time.Sleep(time.Second * 2)
+	for _, l := range lights {
+		err := l.SetBrightness(100)
+		if err != nil {
+			panic(err)
+		}
+	}
+	time.Sleep(time.Second * 2)
+	for _, l := range lights {
+		err := l.Reset()
+		if err != nil {
+			panic(err)
+		}
+	}
+
 }

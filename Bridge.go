@@ -1,29 +1,30 @@
 package main
 
 import (
+	"bytes"
+	"crypto/tls"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"crypto/tls"
-	"encoding/json"
-	"bytes"
-	"errors"
 )
-var _= fmt.Println
+
+var _ = fmt.Println
 
 const bridgeDiscoveryIP = "https://www.meethue.com/api/nupnp"
 const username = "newdeveloper"
 
 type HueBridge struct {
 	ipaddr string
-	baddr string
-	user string
+	baddr  string
+	user   string
 	passwd string
 }
 
 // Get IP address of the bridge
 func (bridge *HueBridge) GetIPAddress() error {
-	tr := &http.Transport {
+	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
@@ -45,13 +46,13 @@ func (bridge *HueBridge) GetIPAddress() error {
 	return nil
 }
 
-	//io.Copy(os.Stdout, resp.Body)
+//io.Copy(os.Stdout, resp.Body)
 func (bridge *HueBridge) isSetup() (bool, error) {
 	resp, err := http.Get(bridge.ipaddr + "/api/" + username)
 	if err != nil {
 		return false, err
 	}
-	
+
 	// Hue is a piece of crap and you don't know if it will send an array or
 	// not, so now I have to check the freaking first byte thus this mess
 	mybuf := new(bytes.Buffer)
@@ -72,8 +73,8 @@ func (bridge *HueBridge) isSetup() (bool, error) {
 				return false, nil
 			} else {
 				return false, errors.New("Unexpected error " +
-				"description from bridge: " +
-				m["description"].(string))
+					"description from bridge: " +
+					m["description"].(string))
 			}
 		} else {
 			return false, errors.New("Completely unknown issue")
@@ -105,7 +106,7 @@ func (bridge *HueBridge) SetupBridge() error {
 	// Need to POST twice, so copy before expending buf
 	b := buf.Bytes()
 
-	resp, err := http.Post(bridge.ipaddr + "/api", "application/json", buf)
+	resp, err := http.Post(bridge.ipaddr+"/api", "application/json", buf)
 	if err != nil {
 		return err
 	}
@@ -138,7 +139,7 @@ func (bridge *HueBridge) SetupBridge() error {
 	fmt.Println("Press link button on bridge, then press enter...")
 	fmt.Scanln()
 
-	resp, err = http.Post(bridge.ipaddr + "/api", "application/json", rd)
+	resp, err = http.Post(bridge.ipaddr+"/api", "application/json", rd)
 	if err != nil {
 		return err
 	}
@@ -156,7 +157,7 @@ func (bridge *HueBridge) SetupBridge() error {
 	} else {
 		m := responses[0]["error"].(JSON)
 		return errors.New("Error when setting up bridge: " +
-		m["description"].(string))
+			m["description"].(string))
 	}
 	return nil
 }
@@ -169,30 +170,28 @@ func (bridge *HueBridge) GetLights() ([]Light, error) {
 	}
 
 	dec := json.NewDecoder(resp.Body)
-	var lights map[string] *HueLight
+	var lights map[string]*HueLight
 	err = dec.Decode(&lights)
 	if err != nil {
 		return nil, err
 	}
 
 	var lights_array []Light
-	for k,l := range lights {
-		fmt.Println("Getting light...")
+	for k, l := range lights {
 		l.Bridge = bridge
 		l.Id = k
-		fmt.Println(l)
-		lights_array = append(lights_array,l)
+		lights_array = append(lights_array, l)
 	}
 
 	return lights_array, nil
 }
 
 func (bridge *HueBridge) UpdateLight(id string, data JSON) ([]JSON, error) {
-	buf := new (bytes.Buffer)
+	buf := new(bytes.Buffer)
 	enc := json.NewEncoder(buf)
 	enc.Encode(data)
-	req, err := http.NewRequest("PUT", bridge.ipaddr + "/api/" +
-		username + "/lights/" + id + "/state", buf)
+	req, err := http.NewRequest("PUT", bridge.ipaddr+"/api/"+
+		username+"/lights/"+id+"/state", buf)
 	if err != nil {
 		return nil, err
 	}
