@@ -1,9 +1,8 @@
 package main
 
-import (
-	"image/color"
-)
+import ()
 
+/*
 type Light interface {
 	// Reset color to white with max brightness
 	Reset() error
@@ -12,7 +11,7 @@ type Light interface {
 	// Turn light off
 	Off() error
 	// Set color with max brightness
-	SetColor(color color.Color) error
+	SetColor(color HSColor) error
 	// Set brightness manually
 	SetBrightness(brightness int) error
 	// Set hue manually
@@ -22,3 +21,4 @@ type Light interface {
 	// Set light's name
 	SetName(name string) error
 }
+*/

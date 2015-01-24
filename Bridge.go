@@ -163,20 +163,20 @@ func (bridge *HueBridge) SetupBridge() error {
 }
 
 // Get all lights connected
-func (bridge *HueBridge) GetLights() ([]Light, error) {
+func (bridge *HueBridge) GetLights() ([]HueLight, error) {
 	resp, err := http.Get(bridge.ipaddr + "/api/" + username + "/lights")
 	if err != nil {
 		return nil, err
 	}
 
 	dec := json.NewDecoder(resp.Body)
-	var lights map[string]*HueLight
+	var lights map[string]HueLight
 	err = dec.Decode(&lights)
 	if err != nil {
 		return nil, err
 	}
 
-	var lights_array []Light
+	var lights_array []HueLight
 	for k, l := range lights {
 		l.Bridge = bridge
 		l.Id = k
@@ -186,12 +186,28 @@ func (bridge *HueBridge) GetLights() ([]Light, error) {
 	return lights_array, nil
 }
 
-func (bridge *HueBridge) UpdateLight(id string, data JSON) ([]JSON, error) {
+func (bridge *HueBridge) GetLight(id string) (*HueLight, error) {
+	resp, err := http.Get(bridge.ipaddr + "/api/" + username + "/lights/" + id)
+	if err != nil {
+		return nil, err
+	}
+
+	dec := json.NewDecoder(resp.Body)
+	var light *HueLight
+	err = dec.Decode(&light)
+	if err != nil {
+		return nil, err
+	}
+
+	return light, nil
+}
+
+func (bridge *HueBridge) UpdateLight(resource string, data JSON) ([]JSON, error) {
 	buf := new(bytes.Buffer)
 	enc := json.NewEncoder(buf)
 	enc.Encode(data)
 	req, err := http.NewRequest("PUT", bridge.ipaddr+"/api/"+
-		username+"/lights/"+id+"/state", buf)
+		username+resource, buf)
 	if err != nil {
 		return nil, err
 	}

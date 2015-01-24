@@ -19,40 +19,77 @@ func main() {
 		panic(err)
 	}
 
-	for _, l := range lights {
-		err := l.Off()
-		if err != nil {
-			panic(err)
-		}
-	}
-	time.Sleep(time.Second * 2)
+	l := lights[0]
+	lights[1].Off()
+	lights[2].Off()
+	l.Reset()
 
-	for _, l := range lights {
-		err := l.On()
-		if err != nil {
-			panic(err)
+	for {
+		b, e := l.IsReachable()
+		if e != nil {
+			panic(e)
 		}
-	}
-	time.Sleep(time.Second * 2)
-	for _, l := range lights {
-		err := l.SetHue(1000)
-		if err != nil {
-			panic(err)
-		}
-	}
-	time.Sleep(time.Second * 2)
-	for _, l := range lights {
-		err := l.SetBrightness(100)
-		if err != nil {
-			panic(err)
-		}
-	}
-	time.Sleep(time.Second * 2)
-	for _, l := range lights {
-		err := l.Reset()
-		if err != nil {
-			panic(err)
-		}
+		fmt.Println("Reachable: %v", b)
+		time.Sleep(time.Second)
 	}
 
+	err = l.SetName("RaeLight")
+	if err != nil {
+		panic(err)
+	}
+
+	l.SetColor(Amber)
+	time.Sleep(time.Second * 4)
+	l.SetColor(AntiqueWhite)
+	time.Sleep(time.Second * 4)
+	l.SetColor(Aqua)
+	time.Sleep(time.Second * 4)
+	l.SetColor(Ash) //
+	time.Sleep(time.Second * 4)
+	l.SetColor(Azure)
+	time.Sleep(time.Second * 4)
+	l.SetColor(Black) //not black
+	time.Sleep(time.Second * 4)
+	l.SetColor(Blue)
+	time.Sleep(time.Second * 4)
+
+	l.Reset()
+
+	/*
+		for _, l := range lights {
+			err := l.Off()
+			if err != nil {
+				panic(err)
+			}
+		}
+		time.Sleep(time.Second * 2)
+
+		for _, l := range lights {
+			err := l.On()
+			if err != nil {
+				panic(err)
+			}
+		}
+		time.Sleep(time.Second * 2)
+		for _, l := range lights {
+			err := l.SetHue(1000)
+			if err != nil {
+				panic(err)
+			}
+		}
+		time.Sleep(time.Second * 2)
+		for _, l := range lights {
+			err := l.SetBrightness(100)
+			if err != nil {
+				panic(err)
+			}
+		}
+		time.Sleep(time.Second * 2)
+		for _, l := range lights {
+			err := l.Reset()
+			if err != nil {
+				panic(err)
+			}
+		}
+	*/
 }

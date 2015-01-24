@@ -2,7 +2,7 @@ package main
 
 import (
 	"errors"
-	"image/color"
+	"fmt"
 )
 
 type state struct {
@@ -19,12 +19,10 @@ type state struct {
 }
 
 type HueLight struct {
-	Light
-
 	// Fields not contained in JSON
-	color  color.Color `json:"-"`
-	Bridge *HueBridge  `json:"-"`
-	Id     string      `json:"-"`
+	color  HSColor    `json:"-"`
+	Bridge *HueBridge `json:"-"`
+	Id     string     `json:"-"`
 
 	Name      string
 	State     state
@@ -42,8 +40,9 @@ func (hlight *HueLight) Reset() error {
 	data["hue"] = 14922
 	data["sat"] = 144
 	data["effect"] = "none"
+	data["alert"] = "none"
 
-	res, err := hlight.Bridge.UpdateLight(hlight.Id, data)
+	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
 	if err != nil {
 		return err
 	}
@@ -70,7 +69,7 @@ func (hlight *HueLight) On() error {
 	data := make(JSON)
 	data["on"] = true
 
-	res, err := hlight.Bridge.UpdateLight(hlight.Id, data)
+	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
 	if err != nil {
 		return err
 	}
@@ -95,7 +94,7 @@ func (hlight *HueLight) Off() error {
 	data := make(JSON)
 	data["on"] = false
 
-	res, err := hlight.Bridge.UpdateLight(hlight.Id, data)
+	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
 	if err != nil {
 		return err
 	}
@@ -116,7 +115,33 @@ func (hlight *HueLight) Off() error {
 	return nil
 }
 
-func (hlight *HueLight) SetColor(color color.Color) error {
+func (hlight *HueLight) SetColor(color HSColor) error {
+	// Hue only accepts hsv, so need to convert from rgb.
+	hlight.color = color
+
+	data := make(JSON)
+	data["hue"] = int(color.H * 65535.0)
+	data["sat"] = int(color.S * 255.0)
+	fmt.Println("Changing color to %d %d", int(color.H*65535.0), int(color.S*255.0))
+
+	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
+	if err != nil {
+		return err
+	}
+
+	// Check if server threw an error
+	if m, ok := res[0]["error"]; ok {
+		// Go complains if I use JSON here, no aliasing
+		mobj, ok := m.(map[string]interface{})
+		if !ok {
+			// Unexpected response, not a matching API
+			panic("Unexpected response from server")
+		}
+
+		return errors.New("Error when setting color: " +
+			mobj["description"].(string))
+	}
+
 	return nil
 }
 
@@ -128,7 +153,7 @@ func (hlight *HueLight) SetBrightness(brightness int) error {
 	data := make(JSON)
 	data["bri"] = brightness
 
-	res, err := hlight.Bridge.UpdateLight(hlight.Id, data)
+	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
 	if err != nil {
 		return err
 	}
@@ -157,7 +182,7 @@ func (hlight *HueLight) SetHue(hue int) error {
 	data := make(JSON)
 	data["hue"] = hue
 
-	res, err := hlight.Bridge.UpdateLight(hlight.Id, data)
+	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
 	if err != nil {
 		return err
 	}
@@ -186,7 +211,7 @@ func (hlight *HueLight) SetSaturation(sat int) error {
 	data := make(JSON)
 	data["sat"] = sat
 
-	res, err := hlight.Bridge.UpdateLight(hlight.Id, data)
+	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
 	if err != nil {
 		return err
 	}
@@ -208,5 +233,38 @@ func (hlight *HueLight) SetSaturation(sat int) error {
 }
 
 func (hlight *HueLight) SetName(name string) error {
+	data := make(JSON)
+	data["name"] = name
+
+	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id, data)
+	if err != nil {
+		return err
+	}
+
+	// Check if server threw an error
+	if m, ok := res[0]["error"]; ok {
+		// Go complains if I use JSON here, no aliasing
+		mobj, ok := m.(map[string]interface{})
+		if !ok {
+			// Unexpected response, not a matching API
+			panic("Unexpected response from server")
+		}
+
+		return errors.New("Error when setting name: " +
+			mobj["description"].(string))
+	}
+
 	return nil
+}
+
+// Unfortunately this is only a guideline. It takes the bridge a while to
+// refresh
+func (hlight *HueLight) IsReachable() (bool, error) {
+	// Get itself, just to check its state.
+	l, err := hlight.Bridge.GetLight(hlight.Id)
+	if err != nil {
+		return false, err
+	}
+
+	return l.State.Reachable, nil
 }
