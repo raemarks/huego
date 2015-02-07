@@ -3,8 +3,13 @@ package main
 type JSON map[string]interface{}
 
 // Uses the HSB colorspace
-type HSColor struct {
+type HSColorFloat struct {
 	H, S float64
+}
+
+// Uses the HSB colorspace
+type HSColorInt struct {
+	H, S int
 }
 
 // Uses the CIE colorspace
@@ -12,13 +17,13 @@ type XYColor struct {
 	X, Y float64
 }
 
-var Amber = HSColor{0.125, 1.0}
-var AntiqueWhite = HSColor{0.944444, 0.14}
-var Aqua = HSColor{0.5, 1.0}
-var Ash = HSColor{0.375, 0.6}
-var Azure = HSColor{0.5833333, 1.0}
-var Black = HSColor{0.0, 0.0}
-var Blue = HSColor{0.66666667, 1.0}
+var Amber = HSColorFloat{0.125, 1.0}
+var AntiqueWhite = HSColorFloat{0.944444, 0.14}
+var Aqua = HSColorFloat{0.5, 1.0}
+var Ash = HSColorFloat{0.375, 0.6}
+var Azure = HSColorFloat{0.5833333, 1.0}
+var Black = HSColorFloat{0.0, 0.0}
+var Blue = HSColorFloat{0.66666667, 1.0}
 
 /*
 var Brick = HSColor{

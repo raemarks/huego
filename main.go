@@ -38,19 +38,19 @@ func main() {
 		panic(err)
 	}
 
-	l.SetColor(Amber)
+	l.SetColorFloatHS(Amber)
 	time.Sleep(time.Second * 4)
-	l.SetColor(AntiqueWhite)
+	l.SetColorFloatHS(AntiqueWhite)
 	time.Sleep(time.Second * 4)
-	l.SetColor(Aqua)
+	l.SetColorFloatHS(Aqua)
 	time.Sleep(time.Second * 4)
-	l.SetColor(Ash) //
+	l.SetColorFloatHS(Ash) //
 	time.Sleep(time.Second * 4)
-	l.SetColor(Azure)
+	l.SetColorFloatHS(Azure)
 	time.Sleep(time.Second * 4)
-	l.SetColor(Black) //not black
+	l.SetColorFloatHS(Black) //not black
 	time.Sleep(time.Second * 4)
-	l.SetColor(Blue)
+	l.SetColorFloatHS(Blue)
 	time.Sleep(time.Second * 4)
 
 	l.Reset()

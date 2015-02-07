@@ -6,23 +6,26 @@ import (
 )
 
 type state struct {
-	On        bool
-	Bri       int
-	Hue       int
-	Sat       int
-	Xy        []float64
-	Ct        int
-	Alert     string
-	Effect    string
-	Colormode string
-	Reachable bool
+	On             bool
+	Bri            int
+	Hue            int
+	Sat            int
+	Xy             []float64
+	Ct             int
+	Alert          string
+	Effect         string
+	Colormode      string
+	Reachable      bool
+	Transitiontime int16
 }
 
 type HueLight struct {
 	// Fields not contained in JSON
-	color  HSColor    `json:"-"`
-	Bridge *HueBridge `json:"-"`
-	Id     string     `json:"-"`
+	hscolorf HSColorFloat `json:"-"`
+	hscolori HSColorInt   `json:"-"`
+	xycolor  XYColor      `json:"-"`
+	Bridge   *HueBridge   `json:"-"`
+	Id       string       `json:"-"`
 
 	Name      string
 	State     state
@@ -41,6 +44,7 @@ func (hlight *HueLight) Reset() error {
 	data["sat"] = 144
 	data["effect"] = "none"
 	data["alert"] = "none"
+	data["transitiontime"] = 4
 
 	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
 	if err != nil {
@@ -115,14 +119,103 @@ func (hlight *HueLight) Off() error {
 	return nil
 }
 
-func (hlight *HueLight) SetColor(color HSColor) error {
+func (hlight *HueLight) SetTransitionTime(time int16) error {
+	hlight.State.Transitiontime = time
+
+	data := make(JSON)
+	data["transitiontime"] = time
+	fmt.Println("Changing transition time to %d", time)
+
+	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
+	if err != nil {
+		return err
+	}
+
+	// Check if server threw an error
+	if m, ok := res[0]["error"]; ok {
+		// Go complains if I use JSON here, no aliasing
+		mobj, ok := m.(map[string]interface{})
+		if !ok {
+			// Unexpected response, not a matching API
+			panic("Unexpected response from server")
+		}
+
+		return errors.New("Error when setting color: " +
+			mobj["description"].(string))
+	}
+
+	return nil
+}
+
+func (hlight *HueLight) SetColorXY(color XYColor) error {
+	hlight.xycolor = color
+
+	data := make(JSON)
+	var xy []float64
+	xy = append(xy, color.X)
+	xy = append(xy, color.Y)
+	data["xy"] = xy
+	fmt.Println("Changing color to x=%lf y=%lf", color.X, color.Y)
+
+	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
+	if err != nil {
+		return err
+	}
+
+	// Check if server threw an error
+	if m, ok := res[0]["error"]; ok {
+		// Go complains if I use JSON here, no aliasing
+		mobj, ok := m.(map[string]interface{})
+		if !ok {
+			// Unexpected response, not a matching API
+			panic("Unexpected response from server")
+		}
+
+		return errors.New("Error when setting color: " +
+			mobj["description"].(string))
+	}
+
+	return nil
+}
+
+func (hlight *HueLight) SetColorFloatHS(color HSColorFloat) error {
 	// Hue only accepts hsv, so need to convert from rgb.
-	hlight.color = color
+	hlight.hscolorf = color
 
 	data := make(JSON)
 	data["hue"] = int(color.H * 65535.0)
 	data["sat"] = int(color.S * 255.0)
 	fmt.Println("Changing color to %d %d", int(color.H*65535.0), int(color.S*255.0))
+
+	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
+	if err != nil {
+		return err
+	}
+
+	// Check if server threw an error
+	if m, ok := res[0]["error"]; ok {
+		// Go complains if I use JSON here, no aliasing
+		mobj, ok := m.(map[string]interface{})
+		if !ok {
+			// Unexpected response, not a matching API
+			panic("Unexpected response from server")
+		}
+
+		return errors.New("Error when setting color: " +
+			mobj["description"].(string))
+	}
+
+	return nil
+}
+
+func (hlight *HueLight) SetColorIntHS(color HSColorInt) error {
+	// Hue only accepts hsv, so need to convert from rgb.
+	hlight.hscolori = color
+
+	data := make(JSON)
+	data["hue"] = color.H
+	data["sat"] = color.S
+	fmt.Println("Changing color to %d %d", color.H, color.S)
 
 	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
 	if err != nil {
