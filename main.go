@@ -23,21 +23,16 @@ func main() {
 	lights[1].Off()
 	lights[2].Off()
 	l.Reset()
-
-	for {
-		b, e := l.IsReachable()
-		if e != nil {
-			panic(e)
-		}
-		fmt.Println("Reachable: %v", b)
-		time.Sleep(time.Second)
-	}
+	time.Sleep(time.Second * 4)
 
 	err = l.SetName("RaeLight")
 	if err != nil {
 		panic(err)
 	}
 
+	l.SetTransitionTime(0)
+	l.SetColorIntHS(HSColorInt{65535, 254})
+	time.Sleep(time.Second * 4)
 	l.SetColorFloatHS(Amber)
 	time.Sleep(time.Second * 4)
 	l.SetColorFloatHS(AntiqueWhite)

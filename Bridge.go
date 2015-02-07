@@ -40,6 +40,7 @@ func (bridge *HueBridge) GetIPAddress() error {
 	if err != nil {
 		return err
 	}
+	fmt.Println(responses)
 
 	bridge.ipaddr = "http://" + responses[0]["internalipaddress"].(string)
 	fmt.Println("Ipaddress: " + bridge.ipaddr)

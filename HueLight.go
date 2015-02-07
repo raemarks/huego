@@ -16,7 +16,7 @@ type state struct {
 	Effect         string
 	Colormode      string
 	Reachable      bool
-	Transitiontime int16
+	Transitiontime int16 `json:"-"`
 }
 
 type HueLight struct {
@@ -122,28 +122,30 @@ func (hlight *HueLight) Off() error {
 func (hlight *HueLight) SetTransitionTime(time int16) error {
 	hlight.State.Transitiontime = time
 
-	data := make(JSON)
-	data["transitiontime"] = time
-	fmt.Println("Changing transition time to %d", time)
+	/*
+		data := make(JSON)
+		data["transitiontime"] = time
+		fmt.Println("Changing transition time to %d", time)
 
-	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
-	if err != nil {
-		return err
-	}
-
-	// Check if server threw an error
-	if m, ok := res[0]["error"]; ok {
-		// Go complains if I use JSON here, no aliasing
-		mobj, ok := m.(map[string]interface{})
-		if !ok {
-			// Unexpected response, not a matching API
-			panic("Unexpected response from server")
+		res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
+		if err != nil {
+			return err
 		}
 
-		return errors.New("Error when setting color: " +
-			mobj["description"].(string))
-	}
+		// Check if server threw an error
+		if m, ok := res[0]["error"]; ok {
+			// Go complains if I use JSON here, no aliasing
+			mobj, ok := m.(map[string]interface{})
+			if !ok {
+				// Unexpected response, not a matching API
+				panic("Unexpected response from server")
+			}
 
+			return errors.New("Error when setting color: " +
+				mobj["description"].(string))
+		}
+
+	*/
 	return nil
 }
 
@@ -155,6 +157,7 @@ func (hlight *HueLight) SetColorXY(color XYColor) error {
 	xy = append(xy, color.X)
 	xy = append(xy, color.Y)
 	data["xy"] = xy
+	data["transitiontime"] = hlight.State.Transitiontime
 	fmt.Println("Changing color to x=%lf y=%lf", color.X, color.Y)
 
 	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
@@ -185,6 +188,7 @@ func (hlight *HueLight) SetColorFloatHS(color HSColorFloat) error {
 	data := make(JSON)
 	data["hue"] = int(color.H * 65535.0)
 	data["sat"] = int(color.S * 255.0)
+	data["transitiontime"] = hlight.State.Transitiontime
 	fmt.Println("Changing color to %d %d", int(color.H*65535.0), int(color.S*255.0))
 
 	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
@@ -215,6 +219,7 @@ func (hlight *HueLight) SetColorIntHS(color HSColorInt) error {
 	data := make(JSON)
 	data["hue"] = color.H
 	data["sat"] = color.S
+	data["transitiontime"] = hlight.State.Transitiontime
 	fmt.Println("Changing color to %d %d", color.H, color.S)
 
 	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
@@ -245,6 +250,7 @@ func (hlight *HueLight) SetBrightness(brightness int) error {
 
 	data := make(JSON)
 	data["bri"] = brightness
+	data["transitiontime"] = hlight.State.Transitiontime
 
 	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
 	if err != nil {
@@ -274,6 +280,7 @@ func (hlight *HueLight) SetHue(hue int) error {
 
 	data := make(JSON)
 	data["hue"] = hue
+	data["transitiontime"] = hlight.State.Transitiontime
 
 	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
 	if err != nil {
@@ -303,6 +310,7 @@ func (hlight *HueLight) SetSaturation(sat int) error {
 
 	data := make(JSON)
 	data["sat"] = sat
+	data["transitiontime"] = hlight.State.Transitiontime
 
 	res, err := hlight.Bridge.UpdateLight("/lights/"+hlight.Id+"/state", data)
 	if err != nil {
