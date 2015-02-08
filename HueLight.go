@@ -91,6 +91,7 @@ func (hlight *HueLight) On() error {
 			mobj["description"].(string))
 	}
 
+	hlight.State.On = true
 	return nil
 }
 
@@ -116,6 +117,7 @@ func (hlight *HueLight) Off() error {
 			mobj["description"].(string))
 	}
 
+	hlight.State.On = false
 	return nil
 }
 
