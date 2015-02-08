@@ -1,4 +1,4 @@
-package main
+package huego
 
 type JSON map[string]interface{}
 
